@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+
+- name: app_stores
+  description: Retours des App stores
+  database: <project_id>
+  schema: "{{ 'app_stores' if target.name == 'prd' else 'app_stores_DEV' }}"
+  freshness: null
+  tables:
+    - name: e_android
+      description: Retours de Android stores
+    - name: e_app_stores_feedbacks_ios_api
+      description: Retours de iOS stores

@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+
+- name: openweather
+  description: "Source de données provenant de l'API OpenWeather"
+  database: <project_id>
+  schema: "{{ '0_sandbox_prd' if target.name == 'prd' else '0_sandbox_dev' }}"
+  freshness: null
+  tables:
+    - name: openweather-raw
+      description: Données provenant de l'API OpenWeather

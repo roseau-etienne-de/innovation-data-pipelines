@@ -1,0 +1,8 @@
+version: 2
+
+macros:
+  - name: add_table_labels
+    description: Permet d'ajouter dynamiquement des labels et tags à une table (hors vues) dans un projet dbt, via une commande ALTER TABLE. Elle inclut des labels par défaut (source, environment, job) et ceux définis dans la configuration, ainsi que des tags pour enrichir les métadonnées de la table.
+    
+  - name: incremental_tmp_table_dropper
+    description: Permet de supprimer directement les tables "_tmp" générées automatiquement à la suite d'une erreur.

@@ -1,0 +1,23 @@
+dbt_<your_project>:
+  target: dev
+  outputs:
+    dev:
+      dataset: dbt_dev
+      job_execution_timeout_seconds: 500
+      job_retries: 1
+      priority: interactive
+      location: "{{ var('location', 'EU') }}"
+      project: <dev_project_id>
+      threads: 10
+      type: bigquery
+      method: oauth
+    prd:
+      dataset: dbt_prd
+      job_execution_timeout_seconds: 5000
+      job_retries: 1
+      priority: interactive
+      location: "{{ var('location', 'EU') }}"
+      project: <prd_project_id>
+      threads: 10
+      type: bigquery
+      method: oauth

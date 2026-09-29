@@ -1,0 +1,39 @@
+# --- STAGE 1: BUILDER ---
+# Utilisation du digest pour l'immutabilité
+FROM python:3.12-slim@sha256:46cb7cc2877e60fbd5e21a9ae6115c30ace7a077b9f8772da879e4590c18c2e3 AS builder
+
+WORKDIR /job
+
+ARG JOB_PATH
+
+RUN pip install --no-cache-dir --upgrade pip
+
+COPY ${JOB_PATH}/job_requirements.* ./job_requirements.txt
+RUN printf "\ngoogle-cloud-logging==3.12.1\n" >> job_requirements.txt
+
+RUN pip install --no-cache-dir --prefix=/install -r job_requirements.txt
+
+
+# --- STAGE 2: RUNNER ---
+FROM python:3.12-slim@sha256:46cb7cc2877e60fbd5e21a9ae6115c30ace7a077b9f8772da879e4590c18c2e3 AS runner
+
+ARG JOB_PATH
+
+RUN adduser --system --group --no-create-home --gecos '' appuser
+
+WORKDIR /job
+
+# Transfert des librairies dans usr/local.
+# --chown évite de dupliquer job en réattribuant les droits
+COPY --from=builder --chown=appuser:appuser /install /usr/local
+
+COPY --chown=appuser:appuser ${JOB_PATH}/job.py ./job.py
+COPY --chown=appuser:appuser ${JOB_PATH}/../config_pipeline ./config_pipeline
+COPY --chown=appuser:appuser ./config_python ./config_python
+
+USER appuser
+
+RUN echo "###########"
+RUN find . | sed 's|[^/]*/|  |g'
+
+ENTRYPOINT ["python", "job.py"]

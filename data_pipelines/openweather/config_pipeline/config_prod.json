@@ -1,0 +1,15 @@
+{
+    "global": {
+        "project" : "<project_id>",
+        "bucket_name" : "<bucket_name>",
+        "filename" : "data/prd/weather.json"
+    },
+    "extract": {
+        "secret_id" : "<secret_id>",
+        "city" : "<city>"
+    },
+    "load": {
+        "dataset" : "0_sandbox_prd",
+        "table" : "openweather-raw"
+    }
+}

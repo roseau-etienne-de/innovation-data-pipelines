@@ -1,0 +1,69 @@
+{
+    "global": {
+        "project" : "<project_id>"
+    },
+	"e_feedbacks_android": {
+		"package_name": "com.<client>.particuliers",
+		"df_target": {
+			"dataset": "app_stores_DEV",
+			"table": "e_android",
+			"write_disposition": "WRITE_APPEND"
+		}
+	},
+	"e_feedbacks_ios": {
+		"url": "https://api.appstoreconnect.apple.com/v1/apps/<app_id>/customerReviews?sort=-createdDate",
+		"df_target": {
+			"dataset": "app_stores_DEV",
+			"table": "e_app_stores_feedbacks_ios_api",
+			"write_disposition": "WRITE_APPEND"
+		}
+	},
+    "traitement": {
+        "dataset" : "0_sandbox_dev",
+        "table" : "t_feedbacks"
+    },
+    "insert_gsheet": {
+        "l_to_gsheet_feedbacks": {
+			"sql_template": {
+				"gen_file": true,
+				"vars": {
+					"fields": [
+						"date",
+						"datetime",
+						"OS",
+						"note_num",
+						"id",
+						"titre",
+						"verbatims",
+						"id_name",
+						"pays",
+						"langue",
+						"device",
+						"manufacturer",
+						"android_os_version"
+					],
+					"decalage_debut": 1,
+					"decalage_fin": 1
+				}
+			},
+			"job": {
+				"drop_duplicates": true,
+				"drop_duplicates_target_subset": [
+					"id"
+				],
+				"ensure_numeric_type_columns_set": [
+					"note_num"
+				],
+				"append_data": true
+			},
+			"source": {
+				"datasets": {
+					"source_dataset": "app_stores_DEV"
+				},
+				"tables": {
+					"source_table_stores": "t_feedbacks"
+				}
+			}
+		}
+    }
+}

@@ -1,0 +1,30 @@
+# cloud_scheduler_cron=0 6 * * *
+
+main:
+  steps:
+    - init_config:
+        assign:
+          - project_id: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - region: ${sys.get_env("LOCATION")}
+          - crj_env: ${sys.get_env("ENV")}
+          - pipeline_name: app-stores
+
+    - 01_e_feedbacks:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project_id + "/locations/" + region + "/jobs/" + crj_env + "-dp-" + pipeline_name + "-01-e-feedbacks-crj"}
+          body:
+            overrides:
+              containerOverrides:
+                - args: ["--env", "${crj_env}", "--reports", "extract"]
+        result: extract_result
+
+    - 02_traitement:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project_id + "/locations/" + region + "/jobs/" + crj_env + "-dp-" + pipeline_name + "-02-traitement-crj"}
+          body:
+            overrides:
+              containerOverrides:
+                - args: ["--select", "t_feedbacks", "-t", "${crj_env}"]
+        result: ttt_result

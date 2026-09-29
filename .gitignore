@@ -1,0 +1,13 @@
+.admin/
+.DS_Store
+.env
+.vscode/
+.wip/
+
+config_dbt/logs/*
+!config_dbt/logs/.gitkeep
+config_dbt/target/*
+!config_dbt/target/.gitkeep
+
+*.pyc
+__pycache__

@@ -1,0 +1,62 @@
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: 'dbt_<your_project>'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'dbt_<your_project>'
+
+vars:
+  date_format: '%Y-%m-%d'
+
+# These configurations specify where dbt should look for different types of files.
+# The `model-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+analysis-paths: ["analyses"]
+macro-paths: ["macros"]
+model-paths: ["models"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+packages-install-path: "dbt_packages"
+
+clean-targets: # directories to be removed by `dbt clean`
+- "target"
+- "dbt_packages"
+
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/docs/configuring-models
+
+# as views. These settings can be overridden in the individual model files
+# using the `{{ config(...) }}` macro.
+models:
+  dbt_<your_project>:
+    +materialized: view
+
+    app_stores: # pipeline name
+      +dataset: |
+        {%- if target.name == "prd" -%} 0_sandbox_prd
+        {%- else -%} 0_sandbox_dev
+        {%- endif -%}
+      +tags: app_stores # Tags are used to specify the pipeline to add the correct label in the table
+
+    openweather:
+      +dataset: |
+        {%- if target.name == "prd" -%} 0_sandbox_prd
+        {%- else -%} 0_sandbox_dev
+        {%- endif -%}
+      +tags: openweather
+
+
+  # This post-hook will add basic labels automatically
+  # It automatically
+  #   adds the label "source": "dbt"
+  #   precifies the environment the table comes from (prod or dev) as "environment": "<target>"
+  #   adds the name of the model with "job": "<model_name>"
+  #   ! note that the pipeline name is also automatically added with the directory 'tags' config as "pipeline": "<pipeline_name>"
+  post-hook:
+  - "{{ add_table_labels(this) }}"
+  - "{{ incremental_tmp_table_dropper(this) }}"

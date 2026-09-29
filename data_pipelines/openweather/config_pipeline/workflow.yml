@@ -1,0 +1,40 @@
+# cloud_scheduler_cron=0 6 * * *
+
+main:
+  steps:
+    - init_config:
+        assign:
+          - project_id: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - region: ${sys.get_env("LOCATION")}
+          - crj_env: ${sys.get_env("ENV")}
+          - pipeline_name: openweather
+
+    - 01_extract:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project_id + "/locations/" + region + "/jobs/" + crj_env + "-dp-openweather-01-extract-crj"}
+          body:
+            overrides:
+              containerOverrides:
+                - args: ["--env", "${crj_env}", "--reports", "extract"]
+        result: extract_result
+
+    - 02_load:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project_id + "/locations/" + region + "/jobs/" + crj_env + "-dp-openweather-02-load-crj"}
+          body:
+            overrides:
+              containerOverrides:
+                - args: ["--env", "${crj_env}", "--reports", "load"]
+        result: load_result
+
+    - 03_transform:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project_id + "/locations/" + region + "/jobs/" + crj_env + "-dp-openweather-03-transform-crj"}
+          body:
+            overrides:
+              containerOverrides:
+                - args: ["--select", "dbt_test_1", "dbt_test_2", "-t", "${crj_env}"]
+        result: transform_result

@@ -1,0 +1,37 @@
+# FROM ghcr.io/dbt-labs/dbt-bigquery:1.9.0@sha256:e3b87b5fbeb3f7dfe0f3bec496e60d652c4b6726b1fb17f510865ad9547c886b
+
+ARG BUILDPLATFORM=linux/amd64
+FROM --platform=${BUILDPLATFORM} ghcr.io/dbt-labs/dbt-bigquery:1.9.0
+
+WORKDIR /job
+
+ARG JOB_PATH
+
+# Variables d'environnement
+ENV DBT_SEND_ANONYMOUS_USAGE_STATS=false \
+    DBT_PROFILES_DIR="/job/dbt" \
+    # Logs receiver
+    DBT_LOG_PATH="/job/dbt/logs" \
+    # SQL compilateur
+    DBT_TARGET_PATH="/job/dbt/target" \
+    DBT_LOG_FORMAT="json"
+
+# Installation des libs (avant le code pour le cache)
+RUN pip install --no-cache-dir "pytz==2025.2"
+    # "dbt-core==1.10" \
+    # "dbt-bigquery==1.10.3" \
+
+RUN adduser --system --group --no-create-home --gecos '' appuser
+
+# COPYS avec CHOWN intégré (évite de doubler le poids de l'image)
+COPY --chown=appuser:appuser ./config_dbt/. ./dbt/.
+COPY --chown=appuser:appuser ${JOB_PATH}/../config_pipeline/sources.yml ./dbt/models/${JOB_PATH}/sources.yml
+COPY --chown=appuser:appuser ${JOB_PATH}/. ./dbt/models/${JOB_PATH}/.
+
+USER appuser
+
+# for debugging, to see the file tree of the image
+RUN find . | sed 's|[^/]*/|  |g'
+
+WORKDIR /job/dbt
+ENTRYPOINT ["dbt", "run"]
